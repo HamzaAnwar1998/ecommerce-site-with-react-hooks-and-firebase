@@ -5,7 +5,7 @@ import {auth,fs} from '../Config/Config'
 
 export const Home = (props) => {
 
-    // gettin current user uid
+    // getting current user uid
     function GetUserUid(){
         const [uid, setUid]=useState(null);
         useEffect(()=>{
