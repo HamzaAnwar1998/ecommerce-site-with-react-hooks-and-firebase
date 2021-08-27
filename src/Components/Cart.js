@@ -49,6 +49,48 @@ export const Cart = () => {
 
     // console.log(cartProducts);
 
+    // global variable
+    let Product;
+    
+    // cart product increase function
+    const cartProductIncrease=(cartProduct)=>{
+        // console.log(cartProduct);
+        Product=cartProduct;
+        Product.qty=Product.qty+1;
+        Product.TotalProductPrice=Product.qty*Product.price;
+        // updating in database
+        auth.onAuthStateChanged(user=>{
+            if(user){
+                fs.collection('Cart ' + user.uid).doc(cartProduct.ID).update(Product).then(()=>{
+                    console.log('increment added');
+                })
+            }
+            else{
+                console.log('user is not logged in to increment');
+            }
+        })
+    }
+
+    // cart product decrease functionality
+    const cartProductDecrease =(cartProduct)=>{
+        Product=cartProduct;
+        if(Product.qty > 1){
+            Product.qty=Product.qty-1;
+            Product.TotalProductPrice=Product.qty*Product.price;
+             // updating in database
+            auth.onAuthStateChanged(user=>{
+                if(user){
+                    fs.collection('Cart ' + user.uid).doc(cartProduct.ID).update(Product).then(()=>{
+                        console.log('decrement');
+                    })
+                }
+                else{
+                    console.log('user is not logged in to decrement');
+                }
+            })
+        }
+    }
+   
     return (
         <>
             <Navbar user={user} />           
@@ -57,7 +99,10 @@ export const Cart = () => {
                 <div className='container-fluid'>
                     <h1 className='text-center'>Cart</h1>
                     <div className='products-box'>
-                        <CartProducts cartProducts={cartProducts}/>
+                        <CartProducts cartProducts={cartProducts}
+                           cartProductIncrease={cartProductIncrease}
+                           cartProductDecrease={cartProductDecrease}
+                        />
                     </div>
                 </div>
             )}
