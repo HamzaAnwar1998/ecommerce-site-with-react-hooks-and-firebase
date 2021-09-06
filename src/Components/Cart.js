@@ -2,6 +2,7 @@ import React,{useState, useEffect} from 'react'
 import {Navbar} from './Navbar'
 import {auth,fs} from '../Config/Config'
 import { CartProducts } from './CartProducts';
+import StripeCheckout from 'react-stripe-checkout';
 
 export const Cart = () => {
 
@@ -48,6 +49,28 @@ export const Cart = () => {
     },[])
 
     // console.log(cartProducts);
+    
+    // getting the qty from cartProducts in a seperate array
+    const qty = cartProducts.map(cartProduct=>{
+        return cartProduct.qty;
+    })
+
+    // reducing the qty in a single value
+    const reducerOfQty = (accumulator, currentValue)=>accumulator+currentValue;
+
+    const totalQty = qty.reduce(reducerOfQty,0);
+
+    // console.log(totalQty);
+
+    // getting the TotalProductPrice from cartProducts in a seperate array
+    const price = cartProducts.map((cartProduct)=>{
+        return cartProduct.TotalProductPrice;
+    })
+
+    // reducing the price in a single value
+    const reducerOfPrice = (accumulator,currentValue)=>accumulator+currentValue;
+
+    const totalPrice = price.reduce(reducerOfPrice,0);
 
     // global variable
     let Product;
@@ -90,10 +113,24 @@ export const Cart = () => {
             })
         }
     }
+
+     // state of totalProducts
+     const [totalProducts, setTotalProducts]=useState(0);
+     // getting cart products   
+     useEffect(()=>{        
+         auth.onAuthStateChanged(user=>{
+             if(user){
+                 fs.collection('Cart ' + user.uid).onSnapshot(snapshot=>{
+                     const qty = snapshot.docs.length;
+                     setTotalProducts(qty);
+                 })
+             }
+         })       
+     },[])  
    
     return (
         <>
-            <Navbar user={user} />           
+            <Navbar user={user} totalProducts={totalProducts} />           
             <br></br>
             {cartProducts.length > 0 && (
                 <div className='container-fluid'>
@@ -104,6 +141,20 @@ export const Cart = () => {
                            cartProductDecrease={cartProductDecrease}
                         />
                     </div>
+                    <div className='summary-box'>
+                        <h5>Cart Summary</h5>
+                        <br></br>
+                        <div>
+                        Total No of Products: <span>{totalQty}</span>
+                        </div>
+                        <div>
+                        Total Price to Pay: <span>$ {totalPrice}</span>
+                        </div>
+                        <br></br>
+                        <StripeCheckout
+                        
+                        ></StripeCheckout>
+                    </div>                                    
                 </div>
             )}
             {cartProducts.length < 1 && (
