@@ -8,11 +8,25 @@ import {useHistory} from 'react-router-dom'
 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Modal } from './Modal';
 
 toast.configure();
 
-export const Cart = () => {
+export const Cart = () => { 
+    
+    // show modal state
+    const [showModal, setShowModal]=useState(false);
 
+    // trigger modal
+    const triggerModal=()=>{
+        setShowModal(true);
+    }
+
+    // hide modal
+    const hideModal=()=>{
+        setShowModal(false);
+    }
+         
     // getting current user function
     function GetCurrentUser(){
         const [user, setUser]=useState(null);
@@ -200,13 +214,24 @@ export const Cart = () => {
                             shippingAddress
                             name='All Products'
                             amount={totalPrice * 100}
-                        ></StripeCheckout>
+                        ></StripeCheckout> 
+                         <h6 className='text-center'
+                        style={{marginTop: 7+'px'}}>OR</h6>
+                        <button className='btn btn-secondary btn-md' 
+                        onClick={()=>triggerModal()}>Cash on Delivery</button>                                                                                                                                             
                     </div>                                    
                 </div>
             )}
             {cartProducts.length < 1 && (
                 <div className='container-fluid'>No products to show</div>
-            ) }           
+            ) }
+
+            {showModal===true&&(
+                <Modal TotalPrice={totalPrice} totalQty={totalQty}
+                    hideModal={hideModal}
+                />
+            )}          
+                            
         </>
     )
 }
