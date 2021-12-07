@@ -2,6 +2,7 @@ import React,{useState, useEffect} from 'react'
 import { Navbar } from './Navbar'
 import { Products } from './Products'
 import {auth,fs} from '../Config/Config'
+import { IndividualFilteredProduct } from './IndividualFilteredProduct'
 
 export const Home = (props) => {
 
@@ -98,22 +99,96 @@ export const Home = (props) => {
         }
         
     }
-    
+
+     // categories list rendering using span tag
+     const [spans]=useState([
+        {id: 'ElectronicDevices', text: 'Electronic Devices'},
+        {id: 'MobileAccessories', text: 'Mobile Accessories'},
+        {id: 'TVAndHomeAppliances', text: 'TV & Home Appliances'},
+        {id: 'SportsAndOutdoors', text: 'Sports & outdoors'},
+        {id: 'HealthAndBeauty', text: 'Health & Beauty'},
+        {id: 'HomeAndLifestyle', text: 'Home & Lifestyle'},
+        {id: 'MensFashion', text: `Men's Fashion`},
+        {id: 'WatchesBagsAndJewellery', text: `Watches, bags & Jewellery`},
+        {id: 'Groceries', text: 'Groceries'},             
+    ])
+
+    // active class state
+    const [active, setActive]=useState('');
+
+    // category state
+    const [category, setCategory]=useState('');
+
+    // handle change ... it will set category and active states
+    const handleChange=(individualSpan)=>{
+        setActive(individualSpan.id);
+        setCategory(individualSpan.text);
+        filterFunction(individualSpan.text);
+    }
+
+    // filtered products state
+    const [filteredProducts, setFilteredProducts]=useState([]);
+
+    // filter function
+    const filterFunction = (text)=>{
+        if(products.length>1){
+            const filter=products.filter((product)=>product.category===text);
+            setFilteredProducts(filter);
+        }
+        else{
+            console.log('no products to filter')
+        } 
+    }
+
+    // return to all products
+    const returntoAllProducts=()=>{
+        setActive('');
+        setCategory('');
+        setFilteredProducts([]);
+    }
+
     return (
         <>
             <Navbar user={user} totalProducts={totalProducts}/>           
             <br></br>
-            {products.length > 0 && (
-                <div className='container-fluid'>
-                    <h1 className='text-center'>Products</h1>
-                    <div className='products-box'>
-                        <Products products={products} addToCart={addToCart}/>
-                    </div>
+            <div className='container-fluid filter-products-main-box'>
+                <div className='filter-box'>
+                    <h6>Filter by category</h6>
+                    {spans.map((individualSpan,index)=>(
+                        <span key={index} id={individualSpan.id}
+                        onClick={()=>handleChange(individualSpan)}
+                        className={individualSpan.id===active ? active:'deactive'}>{individualSpan.text}</span>
+                    ))}
                 </div>
-            )}
-            {products.length < 1 && (
-                <div className='container-fluid'>Please wait....</div>
-            )}
+                {filteredProducts.length > 0&&(
+                  <div className='my-products'>
+                      <h1 className='text-center'>{category}</h1>
+                      <a href="javascript:void(0)" onClick={returntoAllProducts}>Return to All Products</a>
+                      <div className='products-box'>
+                          {filteredProducts.map(individualFilteredProduct=>(
+                              <IndividualFilteredProduct key={individualFilteredProduct.ID}
+                              individualFilteredProduct={individualFilteredProduct}
+                              addToCart={addToCart}/>
+                          ))}
+                      </div>
+                  </div>  
+                )}
+                {filteredProducts.length < 1&&(
+                    <>
+                        {products.length > 0&&(
+                            <div className='my-products'>
+                                <h1 className='text-center'>All Products</h1>
+                                <div className='products-box'>
+                                    <Products products={products} addToCart={addToCart}/>
+                                </div>
+                            </div>
+                        )}
+                        {products.length < 1&&(
+                            <div className='my-products please-wait'>Please wait...</div>
+                        )}
+                    </>
+                )}
+            </div>       
         </>
     )
 }
